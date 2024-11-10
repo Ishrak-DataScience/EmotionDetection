@@ -2,8 +2,7 @@
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from transformers import AutoTokenizer
 import numpy as np
 
 class EmotionDataset(Dataset):
