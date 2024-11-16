@@ -7,11 +7,11 @@ import numpy as np
 
 class EmotionDataset(Dataset):
     def __init__(self, data_path, tokenizer_name, max_length=128):
+        
         self.data = pd.read_csv(data_path)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
-        self.labels = ['Anger', 'Fear', 'Joy', 'Sadness', 'Surprise']
-    
+        self.labels = ['anger', 'fear', 'joy', 'love', 'sadness', 'surprise']
     def __len__(self):
         return len(self.data)
     
