@@ -16,16 +16,16 @@ df = pd.concat((pd.read_csv(file) for file in all_files), ignore_index=True)
 
 # Define a custom dataset
 class EmotionDataset(Dataset):
-    def _init_(self, texts, labels, tokenizer, max_len):
+    def __init__(self, texts, labels, tokenizer, max_len):
         self.texts = texts
         self.labels = labels
         self.tokenizer = tokenizer
         self.max_len = max_len
 
-    def _len_(self):
+    def __len__(self):
         return len(self.texts)
 
-    def _getitem_(self, idx):
+    def __getitem__(self, idx):
         text = str(self.texts[idx])
         label = self.labels[idx]
         
@@ -85,10 +85,10 @@ def train_epoch(model, data_loader, criterion, optimizer, device):
         loss = outputs.loss
         logits = outputs.logits
 
-        total_loss += loss.item()
 
         loss.backward()
         optimizer.step()
+        total_loss += loss.depatch().cpu().item()
         optimizer.zero_grad()
 
     return total_loss / len(data_loader)
