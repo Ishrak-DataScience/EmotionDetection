@@ -185,8 +185,8 @@ def eval_model(model, data_loader, criterion, device):
     return total_loss / len(data_loader), all_preds, all_labels
 
 # Gradual Unfreezing Schedule
-unfrozen_steps = [0, 2, 4]  # Epochs when we unfreeze layers
-layers_to_unfreeze_per_step = [4, 8, 12]  # Number of layers to unfreeze at each step
+unfrozen_steps = [1, 2, 4,6,8,10]  # Epochs when we unfreeze layers
+layers_to_unfreeze_per_step = [1, 2, 3,4,6,8]  # Number of layers to unfreeze at each step
 
 # Training loop
 best_f1 = 0
