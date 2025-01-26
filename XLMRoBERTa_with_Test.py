@@ -217,7 +217,7 @@ print("Training complete!")
 
 # Test Prediction
 test_file_path = '/home/rabo074f/LLM_Project_Ramy/LLM/UpdatedData/public_data_test/track_a/test/eng.csv'
-output_path = "/home/rabo074f/LLM_Project_Ramy/LLM/test_predictions.csv"
+output_path = "/home/rabo074f/LLM_Project_Ramy/LLM/test_predictions_XLMRoBERTa.csv"
 
 # Load test data
 test_df = pd.read_csv(test_file_path)
