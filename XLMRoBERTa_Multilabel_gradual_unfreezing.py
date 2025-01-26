@@ -11,7 +11,8 @@ import numpy as np
 
 
 # File path
-file_path = '/home/rabo074f/LLM_Project_Ramy/LLM/combined_emotions_dataset_with_neutral.csv'
+
+file_path='/home/mois020f/LLM_emtion_detection/code/EmotionDetection/final_dataset.csv'
 
 # Emotion columns (including neutral as per the dataset)
 emotion_columns = ['anger', 'fear', 'joy', 'sadness', 'surprise', 'neutral']
