@@ -248,6 +248,6 @@ for epoch in range(num_epochs):
         print("Early stopping due to no improvement in F1-score.")
         break
 
-plot_single_model_losses(train_losses, val_losses, num_epochs, "XLM-RoBERTa", "training_validation_loss.png")
-plot_metrics(f1_scores, num_epochs, "XLM-RoBERTa", "validation_f1_score.png")
+plot_single_model_losses(train_losses, val_losses, epoch+1, "XLM-RoBERTa", "training_validation_loss.png")
+plot_metrics(f1_scores, epoch+1, "XLM-RoBERTa", "validation_f1_score.png")
 print("Training complete! Plots saved.")

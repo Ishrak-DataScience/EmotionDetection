@@ -72,7 +72,7 @@ class XLMRobertaBiLSTMClassifier(nn.Module):
 
 # Tokenizer and hyperparameters
 tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base')
-max_len = 128
+max_len = 256
 batch_size = 16
 epochs = 12
 learning_rate = 2e-5
@@ -186,8 +186,8 @@ def eval_model(model, data_loader, criterion, device):
     return total_loss / len(data_loader), all_preds, all_labels
 
 # Gradual Unfreezing Schedule
-unfrozen_steps = [1, 2, 4,6,8,10]  # Epochs when we unfreeze layers
-layers_to_unfreeze_per_step = [1, 2, 3,4,6,8]  # Number of layers to unfreeze at each step
+unfrozen_steps = [1, 2, 4,6,8,10,12]  # Epochs when we unfreeze layers
+layers_to_unfreeze_per_step = [1, 2, 3,4,6,8,12]  # Number of layers to unfreeze at each step
 
 # Training loop
 best_f1 = 0
