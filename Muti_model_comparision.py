@@ -82,13 +82,18 @@ model_configs = {
     'electra': {
         'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
         'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
+    },
+    'electraXL': {
+        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
+        'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
     }
+    
 }
 
 # Hyperparameters
 max_len = 256
 batch_size = 16
-epochs = 12
+epochs = 15
 learning_rate = 2e-5
 weight_decay = 1e-4  # L2 Regularization
 
