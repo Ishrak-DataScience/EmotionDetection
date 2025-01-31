@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
-from transformers import XLMRobertaTokenizer, XLMRobertaModel, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler
+from transformers import XLMRobertaTokenizer,AutoTokenizer,AutoModel, DebertaV2Tokenizer,XLMRobertaModel,DebertaV2Model, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler
 from torch.optim import AdamW
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -11,19 +11,52 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # File path
-file_path = '/home/mois020f/LLM_emtion_detection/code/EmotionDetection/final_dataset.csv'
+# File path
+folder_path='/home/mois020f/LLM_emtion_detection/code/EmotionDetection/public_data/train/track_a'
 
 # Emotion columns (including neutral as per the dataset)
-emotion_columns = ['anger', 'fear', 'joy', 'sadness', 'surprise', 'neutral']
-
-
-
+emotion_columns = ['anger', 'fear', 'joy', 'sadness', 'surprise']
 
 # Load dataset
-df = pd.read_csv(file_path)
+combined_data = []
+all_emotion_data = []
 
-# Select required columns
-df = df[['id', 'text'] + emotion_columns]
+# Process each file in the folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.csv'):
+        file_path = os.path.join(folder_path, file_name)
+        try:
+            df = pd.read_csv(file_path)
+
+            # Handle potential missing columns and case inconsistencies
+            for col in emotion_columns:
+                if col.lower() not in [c.lower() for c in df.columns]:
+                    df[col] = 0  # Add missing columns with default value 0
+                else:
+                    correct_col = next((c for c in df.columns if c.lower() == col.lower()), None)
+                    if correct_col and correct_col != col:
+                        df.rename(columns={correct_col: col}, inplace=True)
+
+            # Keep track of emotion counts for summary
+            emotion_counts = df[emotion_columns].sum()
+            emotion_data = {'Language': file_name.split('.')[0]}
+            emotion_data.update(emotion_counts.to_dict())
+            all_emotion_data.append(emotion_data)
+
+            # Append processed data for model training
+            combined_data.append(df)
+        
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+        except Exception as e:
+            print(f"An error occurred while processing {file_name}: {e}")
+
+# Create emotion summary DataFrame
+emotion_summary_df = pd.DataFrame(all_emotion_data).set_index('Language')
+print(emotion_summary_df)
+
+# Combine all data into a single DataFrame
+df = pd.concat(combined_data, ignore_index=True)
 
 # Convert emotion columns to binary labels array
 labels = df[emotion_columns].values
@@ -75,20 +108,24 @@ class BiLSTMClassifier(nn.Module):
 # Tokenizers and models
 model_configs = {
     'xlm-roberta': {
-        'tokenizer': XLMRobertaTokenizer.from_pretrained('xlm-roberta-base'),
-        'model': XLMRobertaModel.from_pretrained('xlm-roberta-base')
+        'tokenizer': XLMRobertaTokenizer.from_pretrained('XLM-RoBERTa-Large'),
+        'model': XLMRobertaModel.from_pretrained('XLM-RoBERTa-Large')
     },
     'bert-multilingual': {
         'tokenizer': BertTokenizer.from_pretrained('bert-base-multilingual-cased'),
         'model': BertModel.from_pretrained('bert-base-multilingual-cased')
     },
-    'electra': {
+     'mdeberta-multilingual': {
+        'tokenizer': DebertaV2Tokenizer.from_pretrained('facebook/mdeberta-v3-base'),
+        'model': DebertaV2Model.from_pretrained('facebook/mdeberta-v3-base')
+     },
+     'fleur': {
+        'tokenizer': AutoTokenizer.from_pretrained('facebook/fleur'),
+        'model': AutoModel.from_pretrained('facebook/fleur')
+     },
+    'electraXL': {
         'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
         'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
-    },
-    'electraXL': {
-        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
-        'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
     }
     
 }
@@ -96,7 +133,7 @@ model_configs = {
 # Hyperparameters
 max_len = 256
 batch_size = 16
-epochs = 15
+epochs = 16
 learning_rate = 2e-5
 weight_decay = 1e-4  # L2 Regularization
 
@@ -158,7 +195,9 @@ for model_name, config in model_configs.items():
     model.to(device)
 
     # Optimizer and scheduler
-     #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8) #good for small dataset
+    # Optimizer configuration for small datasets
+    
+    #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8)  
     optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
     scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
@@ -230,8 +269,8 @@ for model_name, scores in f1_scores.items():
 
 plt.xlabel('Epochs')
 plt.ylabel('F1 Score')
-plt.title('Model Comparison by F1 Score')
+plt.title('Model Comparison by F1 Score for multi language')
 plt.legend()
 plt.grid()
-plt.savefig(os.path.join(output_dir, "model_comparison_f1_score.png"))
+plt.savefig(os.path.join(output_dir, "Model Comparison by F1 Score for multi language.png"))
 plt.show()
