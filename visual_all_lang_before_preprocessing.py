@@ -62,7 +62,6 @@ for file_name in file_names:
         print(f"An error occurred while processing {file_name}: {e}")
 
 emotion_summary_df = pd.DataFrame(all_emotion_data)
-emotion_summary_df.index = range(1, len(emotion_summary_df) + 1)
 emotion_summary_df = emotion_summary_df.set_index('Language')
 
 # Compute percentage representation
@@ -75,7 +74,6 @@ total_row['Language_Name'] = 'Total'
 total_row['Total'] = int(total_row['Total'])  # Ensure total count is an integer
 total_row[emotion_columns + ['Neutral']] = total_row[emotion_columns + ['Neutral']].astype(int)
 emotion_summary_df = pd.concat([emotion_summary_df, total_row.to_frame().T], ignore_index=True)
-emotion_summary_df.index = range(1, len(emotion_summary_df) + 1)
 
 # Compute percentage row for each emotion
 total_emotion_counts = emotion_summary_df.iloc[:-1][emotion_columns + ['Neutral']].sum()
@@ -87,6 +85,9 @@ total_percentage_row['Percentage'] = ''
 # Append percentage row
 total_percentage_df = pd.DataFrame([total_percentage_row])
 emotion_summary_df = pd.concat([emotion_summary_df, total_percentage_df], ignore_index=True)
+
+# Reset index to start from 1
+emotion_summary_df.index = range(1, len(emotion_summary_df) + 1)
 
 emotion_summary_df = emotion_summary_df[['Language_Name'] + emotion_columns + ['Neutral', 'Total', 'Percentage']]
 
