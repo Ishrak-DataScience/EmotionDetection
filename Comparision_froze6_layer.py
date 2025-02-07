@@ -144,7 +144,7 @@ for model_name, config in model_configs.items():
     model = EmotionClassifier(transformer_model, num_classes=len(emotion_columns))
     
     # Freeze variable number of layers
-    freeze_until_layer = 6 # Example: freeze first 12 layers
+    freeze_until_layer = 0 # Example: freeze first 12 layers
     freeze_lower_layers(model.transformer, freeze_until_layer)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
