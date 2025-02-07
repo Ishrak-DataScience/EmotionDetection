@@ -108,24 +108,21 @@ class BiLSTMClassifier(nn.Module):
 # Tokenizers and models
 model_configs = {
     'xlm-roberta': {
-        'tokenizer': XLMRobertaTokenizer.from_pretrained('XLM-RoBERTa-Large'),
-        'model': XLMRobertaModel.from_pretrained('XLM-RoBERTa-Large')
+        'tokenizer': XLMRobertaTokenizer.from_pretrained('XLM-RoBERTa-base'),
+        'model': XLMRobertaModel.from_pretrained('XLM-RoBERTa-base')
     },
     'bert-multilingual': {
         'tokenizer': BertTokenizer.from_pretrained('bert-base-multilingual-cased'),
         'model': BertModel.from_pretrained('bert-base-multilingual-cased')
     },
      'mdeberta-multilingual': {
-        'tokenizer': DebertaV2Tokenizer.from_pretrained('facebook/mdeberta-v3-base'),
-        'model': DebertaV2Model.from_pretrained('facebook/mdeberta-v3-base')
+        'tokenizer': DebertaV2Tokenizer.from_pretrained('microsoft/mdeberta-v3-base'),
+        'model': DebertaV2Model.from_pretrained('microsoft/mdeberta-v3-base')
      },
-     'fleur': {
-        'tokenizer': AutoTokenizer.from_pretrained('facebook/fleur'),
-        'model': AutoModel.from_pretrained('facebook/fleur')
-     },
+    
     'electraXL': {
-        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
-        'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
+        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
+        'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
     }
     
 }
@@ -133,7 +130,7 @@ model_configs = {
 # Hyperparameters
 max_len = 256
 batch_size = 16
-epochs = 16
+epochs = 20
 learning_rate = 2e-5
 weight_decay = 1e-4  # L2 Regularization
 
@@ -197,8 +194,8 @@ for model_name, config in model_configs.items():
     # Optimizer and scheduler
     # Optimizer configuration for small datasets
     
-    #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8)  
-    optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
+    optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8)  
+    #optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
     scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
 
@@ -270,7 +267,7 @@ for model_name, scores in f1_scores.items():
 plt.xlabel('Epochs')
 plt.ylabel('F1 Score')
 plt.title('Model Comparison by F1 Score for multi language')
-plt.legend()
+plt.legend() 
 plt.grid()
-plt.savefig(os.path.join(output_dir, "Model Comparison by F1 Score for multi language.png"))
+plt.savefig(os.path.join(output_dir, "Model Comparison by F1 Score for multi language without_weighted_decay.png")) 
 plt.show()
