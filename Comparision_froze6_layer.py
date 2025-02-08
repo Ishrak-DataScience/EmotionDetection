@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from transformers import XLMRobertaTokenizer, XLMRobertaModel, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler
-from torch.optim import Adam
+from torch.optim import Adam, AdamW
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import torch.nn as nn
@@ -136,7 +136,11 @@ for model_name, config in model_configs.items():
     train_dataset = EmotionDataset(train_texts.to_numpy(), train_labels, tokenizer, max_len)
     val_dataset = EmotionDataset(val_texts.to_numpy(), val_labels, tokenizer, max_len)
     
-    sampler = WeightedRandomSampler(train_labels.sum(axis=1), num_samples=len(train_labels), replacement=True)
+    # Weighted Sampling
+    label_counts = train_labels.sum(axis=0)  # Count of each label
+    weights = 1.0 / label_counts  # Weight for each label
+    sample_weights = (train_labels * weights).sum(axis=1)  # Sample weights based on labels
+    sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
@@ -154,10 +158,12 @@ for model_name, config in model_configs.items():
     model.to(device)
 
     # Optimizer and scheduler
-    optimizer = Adam(model.parameters(), lr=learning_rate)
+    # Optimizer and scheduler
+    optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
-    scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)    # Training and evaluation
+    scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
     criterion = nn.BCEWithLogitsLoss()
+
     best_f1 = 0
     threshold = 0.5
     

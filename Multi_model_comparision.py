@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
-from transformers import XLMRobertaTokenizer, XLMRobertaModel, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler
+from transformers import RobertaTokenizer,RobertaModel, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler
 from torch.optim import AdamW,Adam
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -74,22 +74,22 @@ class BiLSTMClassifier(nn.Module):
 
 # Tokenizers and models
 model_configs = {
-    'xlm-roberta': {
-        'tokenizer': XLMRobertaTokenizer.from_pretrained('xlm-roberta-base'),
-        'model': XLMRobertaModel.from_pretrained('xlm-roberta-base')
+    'electraXL': {
+        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
+        'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
     },
-    'bert-multilingual': {
-        'tokenizer': BertTokenizer.from_pretrained('bert-base-multilingual-cased'),
-        'model': BertModel.from_pretrained('bert-base-multilingual-cased')
+    'roberta': {
+        'tokenizer': RobertaTokenizer.from_pretrained('roberta-base'),
+        'model': RobertaModel.from_pretrained('roberta-base')
+    },
+    'bert-English': {
+        'tokenizer': BertTokenizer.from_pretrained('bert-base-uncased'),
+        'model': BertModel.from_pretrained('bert-base-uncased')
     },
     'electra': {
         'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
         'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
-    },
-    'electraXL': {
-        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
-        'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
-    }
+    } 
     
 }
 
@@ -98,7 +98,7 @@ max_len = 128
 batch_size = 16
 epochs = 14
 learning_rate = 2e-5
-weight_decay = 1e-4  # L2 Regularization
+#weight_decay = 1e-4  # L2 Regularization
 
 # Gradual Unfreezing Schedule
 unfrozen_steps = [1, 2, 4, 6, 8, 10, 12]  # Epochs when we unfreeze layers
@@ -158,8 +158,8 @@ for model_name, config in model_configs.items():
     model.to(device)
 
     # Optimizer and scheduler
-    #optimizer = Adam(model.parameters(), lr=learning_rate)
-    optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8,weight_decay=weight_decay) #good for small dataset
+    optimizer = Adam(model.parameters(), lr=learning_rate)
+    #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8,weight_decay=weight_decay) #good for small dataset
     #optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
     scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
@@ -234,5 +234,5 @@ plt.ylabel('F1 Score')
 plt.title('Model Comparison by F1 Score')
 plt.legend()
 plt.grid()
-plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_without_weighted_decay.png"))
+plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_without_weighted_decay_english_only.png"))
 plt.show()

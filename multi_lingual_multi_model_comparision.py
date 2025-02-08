@@ -107,6 +107,10 @@ class BiLSTMClassifier(nn.Module):
 
 # Tokenizers and models
 model_configs = {
+     'mdeberta-multilingual': {
+        'tokenizer': DebertaV2Tokenizer.from_pretrained('microsoft/mdeberta-v3-base'),
+        'model': DebertaV2Model.from_pretrained('microsoft/mdeberta-v3-base')
+     },
     'xlm-roberta': {
         'tokenizer': XLMRobertaTokenizer.from_pretrained('XLM-RoBERTa-base'),
         'model': XLMRobertaModel.from_pretrained('XLM-RoBERTa-base')
@@ -115,22 +119,18 @@ model_configs = {
         'tokenizer': BertTokenizer.from_pretrained('bert-base-multilingual-cased'),
         'model': BertModel.from_pretrained('bert-base-multilingual-cased')
     },
-     'mdeberta-multilingual': {
-        'tokenizer': DebertaV2Tokenizer.from_pretrained('microsoft/mdeberta-v3-base'),
-        'model': DebertaV2Model.from_pretrained('microsoft/mdeberta-v3-base')
-     },
     
     'electraXL': {
-        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
-        'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
+        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
+        'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
     }
     
 }
 
 # Hyperparameters
-max_len = 256
+max_len = 128
 batch_size = 16
-epochs = 20
+epochs = 15
 learning_rate = 2e-5
 weight_decay = 1e-4  # L2 Regularization
 
@@ -139,7 +139,10 @@ unfrozen_steps = [1, 2, 4, 6, 8, 10, 12]  # Epochs when we unfreeze layers
 layers_to_unfreeze_per_step = [1, 2, 3, 4, 6, 8, 12]  # Number of layers to unfreeze at each step
 
 def unfreeze_layers(model, num_layers_to_unfreeze):
-    # Unfreeze the last `num_layers_to_unfreeze` layers of the transformer
+    # If using DataParallel, access the original model
+    if isinstance(model, torch.nn.DataParallel):
+        model = model.module
+
     total_layers = len(list(model.transformer.encoder.layer))
     layers_to_unfreeze = list(model.transformer.encoder.layer)[-num_layers_to_unfreeze:]
 
@@ -187,14 +190,16 @@ for model_name, config in model_configs.items():
     # Initialize the BiLSTM model
     model = BiLSTMClassifier(transformer_model, hidden_dim=256, num_labels=len(emotion_columns))
 
-    # Define device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs!")
+        model = nn.DataParallel(model)
     model.to(device)
 
     # Optimizer and scheduler
     # Optimizer configuration for small datasets
     
-    optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8)  
+    optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     #optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
     scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)

@@ -10,7 +10,7 @@ import torch.nn as nn
 import numpy as np
 
 # File path
-file_path = '/home/rabo074f/LLM_Project_Ramy/LLM/final_dataset.csv'
+file_path = '/home/mois020f/LLM_emtion_detection/code/EmotionDetection/final_dataset.csv'
 
 # Emotion columns (including neutral as per the dataset)
 emotion_columns = ['anger', 'fear', 'joy', 'sadness', 'surprise', 'neutral']
@@ -69,10 +69,10 @@ class XLMRobertaBiLSTMClassifier(nn.Module):
         return logits
 
 # Tokenizer and hyperparameters
-tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-base')
+tokenizer = XLMRobertaTokenizer.from_pretrained('xlm-roberta-large')
 max_len = 128
 batch_size = 16
-epochs = 8
+epochs = 15
 learning_rate = 2e-5
 weight_decay = 1e-4  # L2 Regularization
 
@@ -96,7 +96,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize the BiLSTM model
-xlmroberta_model = XLMRobertaModel.from_pretrained('xlm-roberta-base')
+xlmroberta_model = XLMRobertaModel.from_pretrained('xlm-roberta-large')
 model = XLMRobertaBiLSTMClassifier(xlmroberta_model, hidden_dim=256, num_labels=len(emotion_columns))
 
 # Define device
@@ -184,8 +184,8 @@ def eval_model(model, data_loader, criterion, device):
     return total_loss / len(data_loader), all_preds, all_labels
 
 # Gradual Unfreezing Schedule
-unfrozen_steps = [0, 2, 4]  # Epochs when we unfreeze layers
-layers_to_unfreeze_per_step = [4, 8, 12]  # Number of layers to unfreeze at each step
+unfrozen_steps = [1,3,5,7, 9,11,13]  # Epochs when we unfreeze layers
+layers_to_unfreeze_per_step = [1, 2, 3,4,6,7,8]  # Number of layers to unfreeze at each step
 
 # Training loop
 best_f1 = 0
@@ -216,7 +216,7 @@ for epoch in range(epochs):
 print("Training complete!")
 
 # Test Prediction
-test_file_path = '/home/rabo074f/LLM_Project_Ramy/LLM/UpdatedData/public_data_test/track_a/test/eng.csv'
+test_file_path = '/home/mois020f/LLM_emtion_detection/code/EmotionDetection/public_data_test/track_a/train/eng.csv'
 output_path = "/home/rabo074f/LLM_Project_Ramy/LLM/test_predictions_XLMRoBERTa.csv"
 
 # Load test data
