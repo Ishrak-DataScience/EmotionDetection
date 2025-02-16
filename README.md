@@ -14,7 +14,7 @@ This repository contains the code, models, and datasets for an **Emotion Detecti
 - **CSV Files (`.csv`)** - Datasets used for training and testing.
 - **`nohup.out`** - Log file capturing execution outputs.
 
-## Clone the repository:
+# Clone the repository:
 
    ```bash
    git clone https://github.com/Ishrak-DataScience/EmotionDetection.git
