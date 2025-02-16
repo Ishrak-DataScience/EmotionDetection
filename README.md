@@ -5,6 +5,8 @@ This repository contains the code, models, and datasets for an **Emotion Detecti
 ## 📂 Repository Structure
 
 - **`Experimental_Models/`** - Contains different models and experiments for emotion detection.
+  - **`Models_used_in_plotting/`** - Includes models that were used for generating plots. The `SelectedModel.py` script can be used to re-generate these plots.Replace SelectedModel with the name of the python files for plotting.
+  - 
 - **`plots/`** - Visualizations and performance analysis plots.
 - **`prediction/`** - Scripts and files related to emotion predictions.
 - **`public_data/`** - Publicly available datasets for training and evaluation.
