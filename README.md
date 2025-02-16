@@ -12,7 +12,7 @@ This repository contains the code, models, and datasets for an **Emotion Detecti
 - **`public_data/`** - Publicly available datasets for training and evaluation.
 - **`public_data_test/`** - Test datasets used for evaluation.
 - **CSV Files (`.csv`)** - Datasets used for training and testing.
-- **`nohup.out`** - Log file capturing execution outputs.
+
 
 # Cloning and Usage of the repository:
 
