@@ -14,7 +14,7 @@ This repository contains the code, models, and datasets for an **Emotion Detecti
 - **CSV Files (`.csv`)** - Datasets used for training and testing.
 - **`nohup.out`** - Log file capturing execution outputs.
 
-# Clone the repository:
+# Cloning and Usage of the repository:
 
    ```bash
    git clone https://github.com/Ishrak-DataScience/EmotionDetection.git
@@ -27,6 +27,9 @@ Before running the project, install the required dependencies from the `requirem
 
 ```bash
 pip install -r requirements.txt
+
+## Further usage
+Few models will ask for parameters like number of epochs and few has default hardcoded parameters which can be changed for experimenting. 
 
 ## 🤝 Contributing
 
