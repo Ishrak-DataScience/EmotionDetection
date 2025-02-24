@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
-from transformers import ElectraTokenizer, ElectraModel, get_scheduler  # Changed from XLMRoberta
+from transformers import ElectraTokenizer, ElectraModel, get_scheduler  
 from torch.optim import AdamW
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -51,12 +51,12 @@ class EmotionDataset(Dataset):
         return {
             'input_ids': encoding['input_ids'].squeeze(0),
             'attention_mask': encoding['attention_mask'].squeeze(0),
-            'label': torch.tensor(label, dtype=torch.float)  # Float for BCEWithLogitsLoss
+            'label': torch.tensor(label, dtype=torch.float)  
         }
 
 # Define the BiLSTM classifier
-class ElectraBiLSTMClassifier(nn.Module):  # Changed class name
-    def __init__(self, electra_model, hidden_dim, num_labels):  # Changed parameter name
+class ElectraBiLSTMClassifier(nn.Module):  
+    def __init__(self, electra_model, hidden_dim, num_labels):  
         super(ElectraBiLSTMClassifier, self).__init__()
         self.electra = electra_model  # Changed from xlmroberta
         self.lstm = nn.LSTM(electra_model.config.hidden_size, hidden_dim, batch_first=True, bidirectional=True)
@@ -69,7 +69,7 @@ class ElectraBiLSTMClassifier(nn.Module):  # Changed class name
         return logits
 
 # Tokenizer and hyperparameters
-tokenizer = ElectraTokenizer.from_pretrained('google/electra-base-discriminator')  # Changed from XLM-RoBERTa
+tokenizer = ElectraTokenizer.from_pretrained('google/electra-base-discriminator')
 max_len = 128
 batch_size = 16
 epochs = 12
@@ -96,8 +96,8 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # Initialize the BiLSTM model
-electra_model = ElectraModel.from_pretrained('google/electra-base-discriminator')  # Changed from XLM-RoBERTa
-model = ElectraBiLSTMClassifier(electra_model, hidden_dim=256, num_labels=len(emotion_columns))  # Updated class and model
+electra_model = ElectraModel.from_pretrained('google/electra-base-discriminator')
+model = ElectraBiLSTMClassifier(electra_model, hidden_dim=256, num_labels=len(emotion_columns))
 
 # Define device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -118,7 +118,7 @@ criterion = nn.BCEWithLogitsLoss()
 
 def unfreeze_layers(model, num_layers_to_unfreeze):
     # Unfreeze the last `num_layers_to_unfreeze` layers of the transformer
-    total_layers = len(list(model.electra.encoder.layer))  # Changed from xlmroberta
+    total_layers = len(list(model.electra.encoder.layer))  
     layers_to_unfreeze = list(model.electra.encoder.layer)[-num_layers_to_unfreeze:]
     
     for layer in layers_to_unfreeze:
