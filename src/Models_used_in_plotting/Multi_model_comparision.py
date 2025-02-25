@@ -58,18 +58,20 @@ class EmotionDataset(Dataset):
             'label': torch.tensor(label, dtype=torch.float)  # Float for BCEWithLogitsLoss
         }
 
-# Define the BiLSTM classifier
-class BiLSTMClassifier(nn.Module):
-    def __init__(self, transformer_model, hidden_dim, num_labels):
-        super(BiLSTMClassifier, self).__init__()
+# Define the EmotionClassifier
+class EmotionClassifier(nn.Module):
+    def __init__(self, transformer_model, num_classes=6):
+        super(EmotionClassifier, self).__init__()
         self.transformer = transformer_model
-        self.lstm = nn.LSTM(transformer_model.config.hidden_size, hidden_dim, batch_first=True, bidirectional=True)
-        self.fc = nn.Linear(hidden_dim * 2, num_labels)
-
+        self.fc = nn.Linear(768, num_classes)  # Project 768 hidden states to 6 output classes
+    
     def forward(self, input_ids, attention_mask):
         outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask)
-        lstm_out, _ = self.lstm(outputs.last_hidden_state)
-        logits = self.fc(lstm_out[:, -1, :])
+        if hasattr(outputs, "pooler_output"):
+            pooled_output = outputs.pooler_output  # Use the pooler output if available
+        else:
+            pooled_output = torch.mean(outputs.last_hidden_state, dim=1)  # Mean pooling
+        logits = self.fc(pooled_output)
         return logits
 
 # Tokenizers and models
@@ -151,10 +153,13 @@ for model_name, config in model_configs.items():
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     # Initialize the BiLSTM model
-    model = BiLSTMClassifier(transformer_model, hidden_dim=256, num_labels=len(emotion_columns))
+    model = EmotionClassifier(transformer_model, num_classes=len(emotion_columns))
 
     # Define device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs!")
+        model = nn.DataParallel(model)
     model.to(device)
 
     # Optimizer and scheduler
@@ -234,5 +239,5 @@ plt.ylabel('F1 Score')
 plt.title('Model Comparison by F1 Score')
 plt.legend()
 plt.grid()
-plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_without_weighted_decay_english_only.png"))
+plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_without_weighted_decay_english_only_base_models.png"))
 plt.show()
