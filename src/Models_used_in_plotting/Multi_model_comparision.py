@@ -63,7 +63,7 @@ class EmotionClassifier(nn.Module):
     def __init__(self, transformer_model, num_classes=6):
         super(EmotionClassifier, self).__init__()
         self.transformer = transformer_model
-        self.fc = nn.Linear(768, num_classes)  # Project 768 hidden states to 6 output classes
+        self.fc = nn.Linear(self.transformer.config.hidden_size, num_classes)  # Project 768 hidden states to 6 output classes
     
     def forward(self, input_ids, attention_mask):
         outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask)
@@ -98,16 +98,18 @@ model_configs = {
 # Hyperparameters
 max_len = 128
 batch_size = 16
-epochs = 14
+epochs = 12
 learning_rate = 2e-5
-#weight_decay = 1e-4  # L2 Regularization
-
+weight_decay = 1e-4  # L2 Regularization
 # Gradual Unfreezing Schedule
-unfrozen_steps = [1, 2, 4, 6, 8, 10, 12]  # Epochs when we unfreeze layers
-layers_to_unfreeze_per_step = [1, 2, 3, 4, 6, 8, 12]  # Number of layers to unfreeze at each step
+unfrozen_steps = [0,2,6]  # Epochs when we unfreeze layers
+layers_to_unfreeze_per_step = [2,4,6]  # Number of layers to unfreeze at each step
 
 def unfreeze_layers(model, num_layers_to_unfreeze):
-    # Unfreeze the last `num_layers_to_unfreeze` layers of the transformer
+    # If using DataParallel, access the original model
+    if isinstance(model, torch.nn.DataParallel):
+        model = model.module
+
     total_layers = len(list(model.transformer.encoder.layer))
     layers_to_unfreeze = list(model.transformer.encoder.layer)[-num_layers_to_unfreeze:]
 
@@ -161,13 +163,14 @@ for model_name, config in model_configs.items():
         print(f"Using {torch.cuda.device_count()} GPUs!")
         model = nn.DataParallel(model)
     model.to(device)
+    # Hyperparameters
+    
 
     # Optimizer and scheduler
-    optimizer = Adam(model.parameters(), lr=learning_rate)
-    #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8,weight_decay=weight_decay)
-    #optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
+    optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
     scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
+    criterion = nn.BCEWithLogitsLoss()
 
     # Define BCEWithLogitsLoss
     criterion = nn.BCEWithLogitsLoss()
@@ -239,5 +242,5 @@ plt.ylabel('F1 Score')
 plt.title('Model Comparison by F1 Score')
 plt.legend()
 plt.grid()
-plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_without_weighted_decay_english_only_base_models.png"))
+plt.savefig(os.path.join(output_dir, "model_comparison_f1_fast_6layer_gradual_unfrozen_english_only_base_models.png"))
 plt.show()

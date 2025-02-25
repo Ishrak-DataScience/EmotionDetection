@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
-from transformers import XLMRobertaTokenizer, XLMRobertaModel, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler
+from transformers import XLMRobertaTokenizer, XLMRobertaModel, BertTokenizer, BertModel, ElectraTokenizer, ElectraModel, get_scheduler,RobertaTokenizer,RobertaModel
 from torch.optim import Adam, AdamW
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -72,7 +72,7 @@ class EmotionClassifier(nn.Module):
         return logits
 
 # Function to freeze lower layers
-def freeze_lower_layers(model, freeze_until_layer):
+def freeze_lower_layers(model, freeze_until_layer): 
     """
     Freeze lower layers for transformer models.
     
@@ -91,24 +91,25 @@ def freeze_lower_layers(model, freeze_until_layer):
     print(f"Froze the first {freeze_until_layer} layers of the model.")
     
 # Tokenizers and models
+# Tokenizers and models
 model_configs = {
-     'electra-large': {
+    'electraXL': {
         'tokenizer': ElectraTokenizer.from_pretrained('google/electra-large-discriminator'),
         'model': ElectraModel.from_pretrained('google/electra-large-discriminator')
     },
-     'electra-base': {
+    'roberta': {
+        'tokenizer': RobertaTokenizer.from_pretrained('roberta-base'),
+        'model': RobertaModel.from_pretrained('roberta-base')
+    },
+    'bert-English': {
+        'tokenizer': BertTokenizer.from_pretrained('bert-base-uncased'),
+        'model': BertModel.from_pretrained('bert-base-uncased')
+    },
+    'electra': {
         'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
         'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
-    },
-    'xlm-roberta-large': {
-        'tokenizer': XLMRobertaTokenizer.from_pretrained('xlm-roberta-large'),
-        'model': XLMRobertaModel.from_pretrained('xlm-roberta-large')
-    },
-    'bert-multilingual': {
-        'tokenizer': BertTokenizer.from_pretrained('bert-base-multilingual-cased'),
-        'model': BertModel.from_pretrained('bert-base-multilingual-cased')
-    }
-   
+    } 
+    
 }
 
 # Hyperparameters
@@ -148,7 +149,7 @@ for model_name, config in model_configs.items():
     model = EmotionClassifier(transformer_model, num_classes=len(emotion_columns))
     
     # Freeze variable number of layers
-    freeze_until_layer = 0 # Example: freeze first 12 layers
+    freeze_until_layer = 10 # Example: freeze first 12 layers
     freeze_lower_layers(model.transformer, freeze_until_layer)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -217,5 +218,5 @@ for model_name, config in model_configs.items():
     plt.title('Model Comparison by F1 Score')
     plt.legend()
     plt.grid()
-    plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_6_layerFrozen.png"))
+    plt.savefig(os.path.join(output_dir, "model_comparison_f1_score_10_layerFrozen_single_language_model.png"))
     plt.show()

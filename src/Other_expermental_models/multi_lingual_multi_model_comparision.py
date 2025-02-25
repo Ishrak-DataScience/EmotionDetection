@@ -136,7 +136,7 @@ weight_decay = 1e-4  # L2 Regularization
 
 # Gradual Unfreezing Schedule
 unfrozen_steps = [1, 2, 4, 6, 8, 10, 12]  # Epochs when we unfreeze layers
-layers_to_unfreeze_per_step = [1, 2, 3, 4, 6, 8, 12]  # Number of layers to unfreeze at each step
+layers_to_unfreeze_per_step = [1, 2, 3, 4, 6, 8, 11]  # Number of layers to unfreeze at each step
 
 def unfreeze_layers(model, num_layers_to_unfreeze):
     # If using DataParallel, access the original model
