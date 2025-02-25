@@ -164,7 +164,7 @@ for model_name, config in model_configs.items():
 
     # Optimizer and scheduler
     optimizer = Adam(model.parameters(), lr=learning_rate)
-    #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8,weight_decay=weight_decay) #good for small dataset
+    #optimizer = AdamW(model.parameters(), lr=learning_rate, betas=(0.9, 0.98), eps=1e-8,weight_decay=weight_decay)
     #optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)  # L2 Regularization
     num_training_steps = epochs * len(train_loader)
     scheduler = get_scheduler("linear", optimizer=optimizer, num_warmup_steps=0, num_training_steps=num_training_steps)
