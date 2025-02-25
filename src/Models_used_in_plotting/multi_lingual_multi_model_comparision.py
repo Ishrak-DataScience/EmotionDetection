@@ -107,36 +107,27 @@ class BiLSTMClassifier(nn.Module):
 
 # Tokenizers and models
 model_configs = {
-     'mdeberta-multilingual': {
-        'tokenizer': DebertaV2Tokenizer.from_pretrained('microsoft/mdeberta-v3-base'),
-        'model': DebertaV2Model.from_pretrained('microsoft/mdeberta-v3-base')
-     },
+     
     'xlm-roberta': {
-        'tokenizer': XLMRobertaTokenizer.from_pretrained('XLM-RoBERTa-base'),
-        'model': XLMRobertaModel.from_pretrained('XLM-RoBERTa-base')
+        'tokenizer': XLMRobertaTokenizer.from_pretrained('XLM-RoBERTa-large'),
+        'model': XLMRobertaModel.from_pretrained('XLM-RoBERTa-large')
     },
     'bert-multilingual': {
         'tokenizer': BertTokenizer.from_pretrained('bert-base-multilingual-cased'),
         'model': BertModel.from_pretrained('bert-base-multilingual-cased')
     },
     
-    'electraXL': {
-        'tokenizer': ElectraTokenizer.from_pretrained('google/electra-base-discriminator'),
-        'model': ElectraModel.from_pretrained('google/electra-base-discriminator')
-    }
     
 }
 
-# Hyperparameters
 max_len = 128
 batch_size = 16
-epochs = 15
+epochs = 12
 learning_rate = 2e-5
 weight_decay = 1e-4  # L2 Regularization
-
 # Gradual Unfreezing Schedule
-unfrozen_steps = [1, 2, 4, 6, 8, 10, 12]  # Epochs when we unfreeze layers
-layers_to_unfreeze_per_step = [1, 2, 3, 4, 6, 8, 11]  # Number of layers to unfreeze at each step
+unfrozen_steps = [0,2,6]  # Epochs when we unfreeze layers
+layers_to_unfreeze_per_step = [2,4,6]  # Number of layers to unfreeze at each step
 
 def unfreeze_layers(model, num_layers_to_unfreeze):
     # If using DataParallel, access the original model
@@ -274,5 +265,5 @@ plt.ylabel('F1 Score')
 plt.title('Model Comparison by F1 Score for multi language')
 plt.legend() 
 plt.grid()
-plt.savefig(os.path.join(output_dir, "Model Comparison by F1 Score for multi language without_weighted_decay.png")) 
+plt.savefig(os.path.join(output_dir, "Model Comparison by F1 Score for multi language without_weighted_decay_v2.png")) 
 plt.show()
