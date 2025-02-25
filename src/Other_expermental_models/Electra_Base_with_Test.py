@@ -58,7 +58,7 @@ class EmotionDataset(Dataset):
 class ElectraBiLSTMClassifier(nn.Module):  
     def __init__(self, electra_model, hidden_dim, num_labels):  
         super(ElectraBiLSTMClassifier, self).__init__()
-        self.electra = electra_model  # Changed from xlmroberta
+        self.electra = electra_model 
         self.lstm = nn.LSTM(electra_model.config.hidden_size, hidden_dim, batch_first=True, bidirectional=True)
         self.fc = nn.Linear(hidden_dim * 2, num_labels)
 
